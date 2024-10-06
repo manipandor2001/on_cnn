@@ -17,7 +17,7 @@ import scipy.io
 from scipy import misc
 from sklearn import svm
 from sklearn import metrics
-from sklearn.externals import joblib
+import joblib
 from sklearn.metrics import accuracy_score
 
 
@@ -31,7 +31,7 @@ import random
 import argparse
 
 import numpy as np
-import cPickle as cp
+import pickle as cp
 # import matplotlib.pyplot as plt
 
 from subprocess import call
@@ -336,7 +336,7 @@ def choose_classifier(dataset, class_number, model_type, model, classifier, D, h
 	if(hyper_para.classifier_type=='OC_CNN'):
 		test_scores   = torch.from_numpy(test_scores)
 		k=0
-		print np.shape(test_features)
+		print(np.shape(test_features))
 		start = time.time()
 		for j in range(no_test_data):
 			temp = model(AddNoise(torch.autograd.Variable(test_data[j:(j+1)].cuda().contiguous().float()), hyper_para.sigma1)).float()
@@ -394,11 +394,11 @@ def choose_classifier(dataset, class_number, model_type, model, classifier, D, h
 def choose_method(dataset, model_type, class_number, hyper_para):
 
 	auc=0.0
-	if(hyper_para.method=='OC_CNN'):
+	if(hyper_para.method=='OC_CNN' or 'OC-CNN'):
 		auc = OC_CNN(dataset, model_type, class_number, hyper_para)
-	elif(hyper_para.method=='OC_SVM_linear'):
+	elif(hyper_para.method=='OC_SVM_linear'or 'OC-SVM-linear'):
 		auc = OC_SVM_linear(dataset, model_type, class_number, hyper_para)
-	elif(hyper_para.method=='Bi_SVM_linear'):
+	elif(hyper_para.method=='Bi_SVM_linear' or 'Bi-SVM-linear'):
 		auc = Bi_SVM_linear(dataset, model_type, class_number, hyper_para)
 	elif(hyper_para.method=='SVDD'):
 		print('look at matlab code')

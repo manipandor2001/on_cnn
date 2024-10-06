@@ -15,13 +15,15 @@ import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.optim
 import torch.utils.data
+from torch.utils.data import DataLoader, Subset, random_split
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 
 import numpy as np
+from PIL import Image
 
-# from light_cnn import LightCNN_9Layers, LightCNN_29Layers, LightCNN_29Layers_v2
-# from load_imglist import ImageList
+from light_cnn import LightCNN_9Layers, LightCNN_29Layers, LightCNN_29Layers_v2
+from torch.utils.data import Dataset  # Import Dataset from torch.utils.data
 
 parser = argparse.ArgumentParser(description='PyTorch Light CNN Training')
 parser.add_argument('--arch', '-a', metavar='ARCH', default='LightCNN')
@@ -46,12 +48,12 @@ parser.add_argument('--model', default='', type=str, metavar='Model',
                     help='model type: LightCNN-9, LightCNN-29, LightCNN-29v2')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
-parser.add_argument('--root_path', default='', type=str, metavar='PATH',
-                    help='path to root path of images (default: none)')
-parser.add_argument('--train_list', default='', type=str, metavar='PATH',
-                    help='path to training list (default: none)')
-parser.add_argument('--val_list', default='', type=str, metavar='PATH',
-                    help='path to validation list (default: none)')
+#parser.add_argument('--root_path', default='', type=str, metavar='PATH',
+ #                   help='path to root path of images (default: none)')
+#parser.add_argument('--train_list', default='', type=str, metavar='PATH',
+ #                   help='path to training list (default: none)')
+#arser.add_argument('--val_list', default='', type=str, metavar='PATH',
+#                   help='path to validation list (default: none)')
 parser.add_argument('--save_path', default='', type=str, metavar='PATH',
                     help='path to save checkpoint (default: none)')
 parser.add_argument('--num_classes', default=99891, type=int,
@@ -109,22 +111,26 @@ def main():
     cudnn.benchmark = True
 
     #load image
-    train_loader = torch.utils.data.DataLoader(
-        ImageList(root=args.root_path, fileList=args.train_list, 
-            transform=transforms.Compose([ 
-                transforms.RandomCrop(128),
-                transforms.RandomHorizontalFlip(), 
-                transforms.ToTensor(),
-            ])),
+
+    transform = transforms.Compose([transforms.ToTensor()])
+
+    # Load the MNIST dataset
+    mnist_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+
+    # Select 500 samples
+    subset_indices = list(range(500))
+    mnist_subset = Subset(mnist_dataset, subset_indices)
+
+    # Split the subset into train and validation sets (e.g., 80% train, 20% val)
+    train_size = 400
+    val_size = 100
+    train_dataset, val_dataset = random_split(mnist_subset, [train_size, val_size])
+
+    train_loader = torch.utils.data.DataLoader( train_dataset,
         batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=True)
 
-    val_loader = torch.utils.data.DataLoader(
-        ImageList(root=args.root_path, fileList=args.val_list, 
-            transform=transforms.Compose([ 
-                transforms.CenterCrop(128),
-                transforms.ToTensor(),
-            ])),
+    val_loader = torch.utils.data.DataLoader( val_dataset,
         batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=True)   
 

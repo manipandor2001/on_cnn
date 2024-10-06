@@ -3,7 +3,8 @@ import sys
 import argparse
 
 from utils import *
-
+# install visdom seperatly 
+#!pip install visdom
 import numpy as np
 
 def str2bool(v):
@@ -138,7 +139,7 @@ model_type = args.model_type
 class_number = args.class_number
 
 ### import parameters for respective datasets
-sys.path.append('../parameters/'+dataset+'/')
+sys.path.append(os.path.join(sys.path[0], '../parameters', dataset))
 from parameters import *
 
 if(args.default==False):
@@ -166,4 +167,11 @@ else:
 	raise argparse.ArgumentTypeError('model type can be either train or eval')
 
 
-print auc
+print(auc)
+"""
+import sys
+print(sys.path)
+it = sys.path
+sys.path.append('../parameters')
+print(sys.path)
+"""
